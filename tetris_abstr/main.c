@@ -53,7 +53,7 @@ typedef struct {
     // Ширина пространства
     unsigned char width;
     // Осадок
-    bool sediment[10][15];
+    bool **sediment;
 } game_space_t;
 
 #pragma pack()
@@ -106,15 +106,37 @@ game_space_t *create_game_space(unsigned char height, unsigned char width) {
     if(game_space == NULL) {
         return NULL;
     }
+    game_space->sediment = (bool **)malloc(height * sizeof(bool *));
+    if(game_space->sediment == NULL) {
+        free(game_space);
+        return NULL;
+    }
+    for(int i = 0; i < height; ++i) {
+        game_space->sediment[i] = (bool *)malloc(width * sizeof(bool));
+        if(game_space->sediment[i]) {
+            while(i) {
+                free(game_space->sediment[i]);
+                --i;
+            }
+            free(game_space->sediment);
+            free(game_space);
+            return NULL;
+        }
+    }
+    for(int i = 0; i < height; ++i) {
+        memset(game_space->sediment[i], 0, sizeof(bool) * width);
+    }
 
     game_space->height = height;
     game_space->width = width;
-
-    memset((void *)game_space, 0, sizeof(bool) * 150);
 
     return game_space;
 }
 
 void destroy_game_space(game_space_t *game_space) {
+    for(int i = 0; i < game_space->height; ++i) {
+        free(game_space->sediment[i]);
+    }
+    free(game_space->sediment);
     free(game_space);
 }
