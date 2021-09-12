@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 
 #define LIST_SIZE 100
 
@@ -46,7 +47,10 @@ forward_list_t *list_skip(forward_list_t *head, int n);
 // список с пандомными значениями
 forward_list_t *list_randomize(int size);
 // добавление элемента после с заполнением значения
-forward_list_t *list_insert_after_with_value(forward_list_t*, int);
+forward_list_t *list_insert_after_with_value(forward_list_t*, unsigned long);
+// генератор рандомных чисел ul
+unsigned long rand_ulong();
+forward_list_t * list_randomize_ulong(int size);
 
 // работа над ошибками
 // убрать временные переменные
@@ -59,10 +63,21 @@ int main()
 
     forward_list_t *head;
     head = list_randomize(LIST_SIZE);
+    //head = list_randomize_ulong(LIST_SIZE);
     list_print(head, "До сортировки\n");
     head = list_merge_sort(head, LIST_SIZE);
     list_print(head, "После сортировки\n");
     // здесь будет функция освоб памяти
+    //printf("%ul \n", rand_ulong());
+    //printf("%ul \n", rand_ulong());
+    printf("%d \n", rand());
+    printf("%d \n", rand());
+    printf("%d \n", time(NULL));
+    printf("%d \n", time(NULL));
+    unsigned long l = rand_ulong();
+    printf("ul = %lu\n", l);
+    unsigned long l2 = ((unsigned)rand());
+    printf("ul = %lu\n", l2);
     return 0;
 }
 
@@ -81,17 +96,17 @@ forward_list_t *forward_list_create(){
     }
 
 // вставка элемента после переданного и заполнение его значения
-forward_list_t *list_insert_after_with_value(forward_list_t *last, int value) {
+forward_list_t *list_insert_after_with_value(forward_list_t *last, unsigned long value) {
     forward_list_t *item = (forward_list_t *)malloc(sizeof(forward_list_t));
     if (item == NULL) {
         return NULL;
     }
     item->next = last->next;
-    item->data = (int *)malloc(sizeof(int));
+    item->data = (unsigned long *)malloc(sizeof(unsigned long));
     if (item->data == NULL) {
         return NULL;
     }
-    *(int*)item->data = value;
+    *(unsigned long*)item->data = value;
     last->next = item;
     return item;
 }
@@ -111,11 +126,11 @@ unsigned long forward_list_size(forward_list_t *head) {
     // объявляем указатель типа списка и указатель на ul
     forward_list_t *tmp = (forward_list_t *)malloc(sizeof(forward_list_t));
     if (tmp == NULL) {
-        return NULL;
+         abort();
     };
     unsigned long *f_list_size = (unsigned long *)malloc(sizeof(unsigned long));
     if (f_list_size == NULL) {
-        return NULL;
+        abort();
     }
     // присваиваем переменной значение головы списка
     tmp = head;
@@ -202,6 +217,27 @@ void forward_list_destroy(forward_list_t *head){
   free(head);
 }
 
+forward_list_t *list_randomize_ulong(int size) {
+        time_t t;
+        srand(time(&t));
+        forward_list_t head = { NULL, NULL };
+        forward_list_t *last = &head;
+        for (int i = 0; i < size; i++) {
+            //last = list_insert_after_with_value(last, rand() % 100);
+            last = list_insert_after_with_value(last,rand_ulong());
+        }
+        return head.next;
+    }
+
+//
+unsigned long rand_ulong(){
+    srand(time(NULL));
+    unsigned int first_numeric = (unsigned)rand();
+    unsigned int second_numeric = (unsigned)rand();
+    return ((unsigned long)first_numeric << 4*8) + second_numeric;
+
+}
+
 // вывод на печать
 void list_print(forward_list_t *head, const char* header) {
     printf("%s", header);
@@ -258,12 +294,13 @@ forward_list_t *list_merge_sort(forward_list_t* head, int size) {
 // Вставить новый элемент после указанного (создаёт новый элемент списка и помещает его после item)
 forward_list_t *list_randomize(int size) {
     time_t t;
+    srand(time(&t));
     forward_list_t head = { NULL, NULL };
     forward_list_t *last = &head;
-
-    srand(time(&t));
     for (int i = 0; i < size; i++) {
-        last = list_insert_after_with_value(last, (unsigned long) rand() % 100);
+        last = list_insert_after_with_value(last, rand() % 100);
+        //last = list_insert_after_with_value(last, rand_ulong());
     }
     return head.next;
 }
+
